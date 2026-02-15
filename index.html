@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>m.rostishka.com | Ultimate Nail Shop v9.2</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#f4f4f4;color:#111}
+header{background:#111;color:white;padding:15px;text-align:center;font-weight:bold;font-size:22px;position:relative}
+#onlineUsers{font-size:14px;margin-top:5px;color:#ff4f9a;}
+nav{background:#222;text-align:center;padding:10px}
+nav button{margin:5px;padding:8px 15px;border:none;border-radius:20px;background:white;font-weight:bold;cursor:pointer}
+.section{display:none;padding:20px}
+.active{display:block}
+.products{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.card{background:white;padding:15px;border-radius:15px;box-shadow:0 4px 10px rgba(0,0,0,0.1);text-align:center;transition:0.3s;position:relative}
+.card:hover{transform:scale(1.05)}
+.price{font-weight:bold;margin:10px 0}
+.buyBtn{background:#ff4f9a;color:white;border:none;padding:8px 15px;border-radius:15px;cursor:pointer;transition:0.2s}
+.buyBtn:hover{transform:scale(1.1)}
+.cart-box{position:fixed;top:10px;right:10px;background:white;padding:10px;border-radius:10px;box-shadow:0 4px 10px rgba(0,0,0,0.2)}
+footer{background:#111;color:white;text-align:center;padding:15px;margin-top:30px}
+#chatBox{border:1px solid #ccc;border-radius:15px;height:200px;overflow-y:auto;padding:10px;background:white;margin-top:10px}
+.chat-message{margin:5px 0;padding:5px;border-radius:10px}
+.user{background:#ff4f9a;color:white;text-align:right}
+.bot{background:#eee;color:#111;text-align:left}
+input, textarea{padding:8px;border-radius:10px;border:1px solid #ccc;width:100%;margin-top:8px}
+.main-btn{background:#111;color:white;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;margin-top:10px}
+.card img{width:50px;height:50px;border-radius:50%;position:absolute;top:10px;right:10px}
+.review-list{margin-top:10px;background:#f9f9f9;padding:5px;border-radius:10px;max-height:100px;overflow-y:auto}
+.review-item{font-size:14px;margin:3px 0}
+</style>
+</head>
+<body>
+
+<header>
+💅 m.rostishka.com | Ultimate Nail Shop v9.2
+<div id="onlineUsers"></div>
+</header>
+
+<div class="cart-box">🛒 Кошик: <span id="cartCount">0</span></div>
+
+<nav>
+<button onclick="show('home')">Головна</button>
+<button onclick="show('shop')">Магазин</button>
+<button onclick="show('cart')">Кошик</button>
+<button onclick="show('reviews')">Відгуки</button>
+<button onclick="show('chat')">Чат</button>
+<button onclick="show('about')">Про сайт</button>
+</nav>
+
+<div id="home" class="section active">
+<h2>Ласкаво просимо!</h2>
+<p>🎉 Вітаємо в салоні манікюру Ростислава!</p>
+<p>⭐ Рейтинг: 4.9 | 1200+ клієнтів</p>
+<p>💎 Тут ви знайдете найкращі товари для манікюру — гель‑лаки, набори, інструменти, декор та багато іншого.</p>
+</div>
+
+<div id="shop" class="section">
+<h2>Наші товари</h2>
+<div class="products" id="products"></div>
+</div>
+
+<div id="cart" class="section">
+<h2>Ваш кошик</h2>
+<div id="cartItems"></div>
+<button class="main-btn" onclick="checkout()">Оформити замовлення</button>
+</div>
+
+<div id="reviews" class="section">
+<h2>Відгуки</h2>
+<div id="reviewsBox"></div>
+<textarea id="reviewInput" placeholder="Залишити свій відгук"></textarea>
+<button class="main-btn" onclick="addReview()">Додати відгук</button>
+</div>
+
+<div id="chat" class="section">
+<h2>Чат із персоналом</h2>
+<div id="chatBox"></div>
+<input type="text" id="chatInput" placeholder="Ваше повідомлення">
+<button class="main-btn" onclick="sendChat()">Відправити</button>
+</div>
+
+<div id="about" class="section">
+<h2>Про сайт</h2>
+<p>Цей сайт — інтерактивний магазин манікюрних товарів, створений Ростиславом як демонстрація всіх фішок.</p>
+<p>🌐 Тут можна переглядати товари, додавати їх у кошик, залишати відгуки, спілкуватися в чаті, отримувати повідомлення з emoji та бонуси!</p>
+<p>📅 Версія: 9.2 Ultimate</p>
+<p>👨‍💼 Майстер: Ростислав — автор та головний творець салону!</p>
+</div>
+
+<footer>© 2026 m.rostishka.com | Все працює без сервера</footer>
+
+<script>
+let cart = [];
+let products = [
+{name:"Гель-лак Premium",price:800,icon:"https://upload.wikimedia.org/wikipedia/commons/0/09/Nail_polish_emoji.png",desc:"Надійний гель-лак високої якості, тримається до 3 тижнів.",reviews:[]},
+{name:"Набір для манікюру",price:1200,icon:"https://upload.wikimedia.org/wikipedia/commons/1/12/Manicure_emoji.png",desc:"Все для домашнього манікюру, включає інструменти та декор.",reviews:[]},
+{name:"VIP дизайн",price:1500,icon:"https://upload.wikimedia.org/wikipedia/commons/0/02/Star_emoji.png",desc:"Ексклюзивний дизайн для особливих випадків.",reviews:[]},
+{name:"Блискітки",price:200,icon:"https://upload.wikimedia.org/wikipedia/commons/9/90/Glitter_emoji.png",desc:"Різнокольорові блискітки для нігтів, легко наносяться.",reviews:[]},
+{name:"Лампа UV/LED",price:900,icon:"https://upload.wikimedia.org/wikipedia/commons/2/24/Light_emoji.png",desc:"Лампа для швидкого сушіння гель-лаків.",reviews:[]},
+{name:"Секретний набір",price:2500,icon:"https://upload.wikimedia.org/wikipedia/commons/5/55/Gift_emoji.png",desc:"Сюрприз набору невідомий, але дуже крутий 😎",reviews:[]},
+{name:"Фрезер",price:3000,icon:"https://upload.wikimedia.org/wikipedia/commons/3/31/Tool_emoji.png",desc:"Професійний фрезер для манікюру.",reviews:[]},
+{name:"Штучні нігті",price:500,icon:"https://upload.wikimedia.org/wikipedia/commons/2/22/Nail_emoji.png",desc:"Штучні нігті для швидкого і красивого манікюру.",reviews:[]}
+];
+
+// Ініціалізація наявності рандомно 10–50
+products.forEach(p=>p.stock=Math.floor(Math.random()*41)+10);
+
+// Відвідувачі онлайн
+function updateOnline(){document.getElementById("onlineUsers").innerText=`Онлайн зараз: ${Math.floor(Math.random()*51)+20} людей`;}
+setInterval(updateOnline,2000);
+updateOnline();
+
+// Рандомне “розбирання” товарів
+function randomStockDrop(){
+products.forEach(p=>{
+if(p.stock>0 && Math.random()<0.3) p.stock--; // 30% шанс що товар зменшиться
+});
+if(document.getElementById("shop").classList.contains("active")) renderProducts();
+}
+setInterval(randomStockDrop,3000); // кожні 3 секунди
+
+// Вітальне повідомлення
+addBotMsg("🎉 Вітаємо в салоні манікюру Ростислава!");
+
+// Показати секцію
+function show(id){
+document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+if(id==="shop") renderProducts();
+if(id==="cart") renderCart();
+if(id==="reviews") renderReviews();
+}
+
+// Відображення товарів
+function renderProducts(){
+let container=document.getElementById("products"); container.innerHTML="";
+products.forEach((p,i)=>{
+let reviewHtml = p.reviews.length>0?p.reviews.map(r=>`<div class="review-item">💬 ${r}</div>`).join(""):"<div class='review-item'>Поки що відгуків немає</div>";
+container.innerHTML+=`<div class="card">
+<img src="${p.icon}" alt="icon">
+<h3>${p.name}</h3>
+<p class="price">${p.price} грн</p>
+<p>${p.desc}</p>
+<p>Наявність: ${p.stock} шт</p>
+<div class="review-list">${reviewHtml}</div>
+<button class="buyBtn" onclick="addToCart(${i})">Додати в кошик</button>
+</div>`;
+});
+}
+
+// Додати в кошик
+function addToCart(i){
+if(products[i].stock<=0){addBotMsg("⚠️ На жаль, цього товару немає в наявності.");return;}
+cart.push(products[i]);
+products[i].stock--;
+document.getElementById("cartCount").innerText=cart.length;
+addBotMsg(`🛒 Ви додали "${products[i].name}" в кошик!`);
+}
+
+// Кошик
+function renderCart(){
+let box=document.getElementById("cartItems");
+box.innerHTML="";
+if(cart.length==0){box.innerHTML="<p>Кошик пустий</p>";return;}
+cart.forEach((item,i)=>{box.innerHTML+=`<p>${item.name} — ${item.price} грн <button onclick="removeFromCart(${i})">❌</button></p>`;});
+}
+
+function removeFromCart(i){cart.splice(i,1);document.getElementById("cartCount").innerText=cart.length; renderCart();}
+function checkout(){if(cart.length==0){addBotMsg("🛑 Ваш кошик пустий!");return;}addBotMsg("✅ Замовлення оформлено! Товар доставлять 1-3 дні 📦");cart=[];document.getElementById("cartCount").innerText=0; renderCart();}
+
+// Відгуки
+function renderReviews(){let box=document.getElementById("reviewsBox");box.innerHTML="";reviews.forEach(r=>{box.innerHTML+=`<p>💬 "${r}"</p>`;});}
+function addReview(){let txt=document.getElementById("reviewInput").value.trim();if(txt==="")return;reviews.push(txt);document.getElementById("reviewInput").value="";renderReviews();addBotMsg("💡 Дякуємо за ваш відгук!");}
+
+// Чат
+function addBotMsg(msg){let box=document.getElementById("chatBox");box.innerHTML+=`<div class="chat-message bot">${msg}</div>`;box.scrollTop=box.scrollHeight;}
+function sendChat(){let txt=document.getElementById("chatInput").value.trim();if(txt==="")return;document.getElementById("chatBox").innerHTML+=`<div class="chat-message user">${txt}</div>`;document.getElementById("chatInput").value="";setTimeout(()=>{addBotMsg("👩‍💼 Дякуємо! Ми скоро відповімо 😊");},500);}
+</script>
+</body>
+</html>
